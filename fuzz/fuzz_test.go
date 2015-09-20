@@ -13,19 +13,26 @@
 package fuzz
 
 import (
-	"github.com/pascallouisperez/reflext"
-	"regexp"
+	"testing"
 )
 
-var FILTER = regexp.MustCompile("^[0-9a-zT%,|_*{<[]]+$")
+func TestFuzz(t *testing.T) {
+	examples := map[string]int{
+		// Ignore
+		"\t": -1,
 
-func Fuzz(data []byte) int {
-	s := string(data)
-	if !FILTER.MatchString(s) {
-		return -1
-	} else if _, err := reflext.Compile(s, 0, true, "", 'a'); err != nil {
-		return 0
-	} else {
-		return 1
+		// Interesting, keep in corpus
+		"int":         1,
+		"map[int]int": 1,
+		"*{_}":        1,
+
+		// Less interesting, keep in corpus
+		"map int]int": 0,
+	}
+	for s, expected := range examples {
+		actual := Fuzz([]byte(s))
+		if expected != actual {
+			t.Errorf("%s: expected %d, found %d", s, expected, actual)
+		}
 	}
 }
