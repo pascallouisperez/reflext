@@ -32,6 +32,13 @@ type sliceOf struct {
 
 func (m *sliceOf) Match(reflect.Type) bool { return false }
 
+type arrayOf struct {
+	size int
+	exp  expression
+}
+
+func (m *arrayOf) Match(reflect.Type) bool { return false }
+
 type ptrOf struct {
 	exp expression
 }
@@ -45,7 +52,12 @@ type mapOf struct {
 
 func (m *mapOf) Match(reflect.Type) bool { return false }
 
-// TODO(pascal): chanOf
+type chanOf struct {
+	exp expression
+	dir reflect.ChanDir
+}
+
+func (m *chanOf) Match(reflect.Type) bool { return false }
 
 type funcOf struct {
 	arguments []expression
@@ -55,10 +67,16 @@ type funcOf struct {
 func (m *funcOf) Match(reflect.Type) bool { return false }
 
 type kindOf struct {
-	exp expression
+	kind reflect.Kind
 }
 
 func (m *kindOf) Match(reflect.Type) bool { return false }
+
+type aliasOf struct {
+	exp expression
+}
+
+func (m *aliasOf) Match(reflect.Type) bool { return false }
 
 type any struct{}
 
@@ -81,10 +99,12 @@ func (m *captureOf) Match(reflect.Type) bool { return false }
 var _ = []expression{
 	&exact{},
 	&sliceOf{},
+	&arrayOf{},
 	&ptrOf{},
 	&mapOf{},
 	&funcOf{},
 	&kindOf{},
+	&aliasOf{},
 	&any{},
 	&firstOf{},
 	&captureOf{},

@@ -35,9 +35,13 @@ Or any signed integer
 
 Or any type alias of a string
 
-    kind[string]
+    alias[string]
 
-Here, we are introducing a type selector `kind[T]` which matches types of kind `T` (but not `T` itself).
+Here, we are introducing a type selector `alias[T]` which matches types aliases of `T` (but not `T` itself).
+
+Another type selector is `kind[K]` to match types with kind of `K`. We saw `[]struct` above which is syntactic sugar for
+
+    []kind[struct]
 
 Wildcards are also supported
 
@@ -70,12 +74,14 @@ The following are not yet implemented
 The grammar of type expressions is as follows
 
     E := B
+       | [n]E
        | []E
        | *E
        | map[E]E
        | chan E | chan <- E | <- chan E
        | func (E, ...) R
-       | kind[E]
+       | kind[K]
+       | alias[T]
        | _
        | %T
        | E "|" E
@@ -84,7 +90,10 @@ The grammar of type expressions is as follows
     R := E
        | (E, ...)
 
-    B := bool | uint | int | float | complex | byte
+    B := bool | uint | int | float | complex | byte | ...
+
+    K := B
+       | struct | array | chan | func | interface | map | slice
 
 All base types `B` e.g. `uint8`, or `float64` are supported. They are simply elided here for bervity.
 
@@ -98,7 +107,8 @@ The grammar transalates naturally into the following decomposition
 * Map(E, E)
 * Chan(E, opt)
 * Func([]E, []E)
-* Kind(E)
+* Kind(K)
+* Alias(T)
 * Any
 * FirstOf([]E)
 * Capture(E, index)
