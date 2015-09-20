@@ -6,9 +6,10 @@ build:
 	go-fuzz-build github.com/pascallouisperez/reflext/fuzz
 
 run:
+	mkdir -p examples/corpus
+	cp initial-corpus/* examples/corpus/
 	go-fuzz -bin=./fuzz-fuzz.zip -workdir=examples
 
 clean:
 	rm fuzz-fuzz.zip
 	rm -Rf examples
-	git checkout -- examples
