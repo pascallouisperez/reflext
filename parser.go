@@ -80,8 +80,11 @@ type token struct {
 type parser struct {
 	tokens []token
 	index  int
-	group  int
-	args   []interface{}
+
+	args      []interface{}
+	argsIndex int
+
+	group int
 }
 
 func parse(expr string, args ...interface{}) (expression, error) {
@@ -313,6 +316,17 @@ func (p *parser) parseSubExp() (expression, bool) {
 			}
 			return &funcOf{argsExp, []expression{returnExp}}, true
 		}
+
+	case "%":
+		argsIndex := p.argsIndex
+		p.argsIndex++
+		if ok := p.consume("T"); !ok {
+			return nil, false
+		}
+		if len(p.args) <= argsIndex {
+			return nil, false
+		}
+		return &exact{reflect.TypeOf(p.args[argsIndex])}, true
 
 	default:
 		if typ, ok := types[text]; ok {

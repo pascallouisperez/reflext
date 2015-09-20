@@ -75,13 +75,13 @@ func (_ *ReflextSuite) TestParser_func(c *C) {
 
 func (_ *ReflextSuite) TestParser_concrete(c *C) {
 	examples := map[string]expression{
-		"%T": nil,
-		// func(%T, %T) %T
-		// etc.
+		"%T":           &exact{types["int"]},
+		"%T | %T | %T": &firstOf{[]expression{&exact{types["int"]}, &exact{types["bool"]}, &exact{types["string"]}}},
+		"map[%T]*%T":   &mapOf{&exact{types["int"]}, &ptrOf{&exact{types["bool"]}}},
 	}
 	for s, expected := range examples {
 		c.Log(s)
-		actual, err := parse(s)
+		actual, err := parse(s, 0, true, "")
 		c.Assert(err, IsNil)
 		c.Assert(actual, DeepEquals, expected)
 	}
@@ -93,6 +93,7 @@ func (_ *ReflextSuite) TestParser_bad(c *C) {
 		"[ int",
 		"] int",
 		"[w]int",
+		"%t",
 	}
 	for _, s := range examples {
 		_, err := parse(s)
