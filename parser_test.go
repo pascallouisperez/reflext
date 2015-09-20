@@ -20,27 +20,27 @@ import (
 
 func (_ *ReflextSuite) TestParser_good(c *C) {
 	examples := map[string]expression{
-		"int":               &exact{baseTypes["int"]},
-		"[2]bool":           &arrayOf{2, &exact{baseTypes["bool"]}},
-		"[]bool":            &sliceOf{&exact{baseTypes["bool"]}},
-		"[][]rune":          &sliceOf{&sliceOf{&exact{baseTypes["rune"]}}},
-		"*string":           &ptrOf{&exact{baseTypes["string"]}},
-		"map[byte]error":    &mapOf{&exact{baseTypes["byte"]}, &exact{baseTypes["error"]}},
-		"chan int":          &chanOf{&exact{baseTypes["int"]}, reflect.BothDir},
-		"chan <- int":       &chanOf{&exact{baseTypes["int"]}, reflect.SendDir},
-		"<- chan int":       &chanOf{&exact{baseTypes["int"]}, reflect.RecvDir},
+		"int":               &exact{types["int"]},
+		"[2]bool":           &arrayOf{2, &exact{types["bool"]}},
+		"[]bool":            &sliceOf{&exact{types["bool"]}},
+		"[][]rune":          &sliceOf{&sliceOf{&exact{types["rune"]}}},
+		"*string":           &ptrOf{&exact{types["string"]}},
+		"map[byte]error":    &mapOf{&exact{types["byte"]}, &exact{types["error"]}},
+		"chan int":          &chanOf{&exact{types["int"]}, reflect.BothDir},
+		"chan <- int":       &chanOf{&exact{types["int"]}, reflect.SendDir},
+		"<- chan int":       &chanOf{&exact{types["int"]}, reflect.RecvDir},
 		"kind[uint8]":       &kindOf{kinds["uint8"]},
 		"struct":            &kindOf{kinds["struct"]},
-		"alias[chan uint8]": &aliasOf{&chanOf{&exact{baseTypes["uint8"]}, reflect.BothDir}},
+		"alias[chan uint8]": &aliasOf{&chanOf{&exact{types["uint8"]}, reflect.BothDir}},
 		"_":                 &any{},
-		"int | uint":        &firstOf{[]expression{&exact{baseTypes["int"]}, &exact{baseTypes["uint"]}}},
+		"int | uint":        &firstOf{[]expression{&exact{types["int"]}, &exact{types["uint"]}}},
 		"int | kind[int] | uint | kind[uint]": &firstOf{[]expression{
-			&exact{baseTypes["int"]}, &kindOf{kinds["int"]},
-			&exact{baseTypes["uint"]}, &kindOf{kinds["uint"]},
+			&exact{types["int"]}, &kindOf{kinds["int"]},
+			&exact{types["uint"]}, &kindOf{kinds["uint"]},
 		}},
-		"{int}":         &captureOf{&exact{baseTypes["int"]}, 0},
+		"{int}":         &captureOf{&exact{types["int"]}, 0},
 		"map[{_}]*{_}":  &mapOf{&captureOf{&any{}, 0}, &ptrOf{&captureOf{&any{}, 1}}},
-		"{{int | {_}}}": &captureOf{&captureOf{&firstOf{[]expression{&exact{baseTypes["int"]}, &captureOf{&any{}, 2}}}, 1}, 0},
+		"{{int | {_}}}": &captureOf{&captureOf{&firstOf{[]expression{&exact{types["int"]}, &captureOf{&any{}, 2}}}, 1}, 0},
 	}
 	for s, expected := range examples {
 		c.Log(s)
@@ -53,16 +53,16 @@ func (_ *ReflextSuite) TestParser_good(c *C) {
 func (_ *ReflextSuite) TestParser_func(c *C) {
 	examples := map[string]expression{
 		"func(int) byte": &funcOf{
-			[]expression{&exact{baseTypes["int"]}},
-			[]expression{&exact{baseTypes["byte"]}},
+			[]expression{&exact{types["int"]}},
+			[]expression{&exact{types["byte"]}},
 		},
 		"func(int) (int, int)": &funcOf{
-			[]expression{&exact{baseTypes["int"]}},
-			[]expression{&exact{baseTypes["int"]}, &exact{baseTypes["int"]}},
+			[]expression{&exact{types["int"]}},
+			[]expression{&exact{types["int"]}, &exact{types["int"]}},
 		},
 		"func(int | uint, bool) (int, int)": &funcOf{
-			[]expression{&firstOf{[]expression{&exact{baseTypes["int"]}, &exact{baseTypes["uint"]}}}, &exact{baseTypes["bool"]}},
-			[]expression{&exact{baseTypes["int"]}, &exact{baseTypes["int"]}},
+			[]expression{&firstOf{[]expression{&exact{types["int"]}, &exact{types["uint"]}}}, &exact{types["bool"]}},
+			[]expression{&exact{types["int"]}, &exact{types["int"]}},
 		},
 	}
 	for s, expected := range examples {

@@ -21,7 +21,7 @@ import (
 	"text/scanner"
 )
 
-var baseTypes = map[string]reflect.Type{
+var types = map[string]reflect.Type{
 	"bool":       reflect.TypeOf(true),
 	"byte":       reflect.TypeOf(byte(0)),
 	"complex64":  reflect.TypeOf(complex64(0)),
@@ -315,7 +315,7 @@ func (p *parser) parseSubExp() (expression, bool) {
 		}
 
 	default:
-		if typ, ok := baseTypes[text]; ok {
+		if typ, ok := types[text]; ok {
 			return &exact{typ}, true
 		}
 		return nil, false
