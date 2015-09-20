@@ -41,17 +41,8 @@ func (_ *ReflextSuite) TestParser_good(c *C) {
 		"{int}":         &captureOf{&exact{types["int"]}, 0},
 		"map[{_}]*{_}":  &mapOf{&captureOf{&any{}, 0}, &ptrOf{&captureOf{&any{}, 1}}},
 		"{{int | {_}}}": &captureOf{&captureOf{&firstOf{[]expression{&exact{types["int"]}, &captureOf{&any{}, 2}}}, 1}, 0},
-	}
-	for s, expected := range examples {
-		c.Log(s)
-		actual, err := parse(s)
-		c.Assert(err, IsNil)
-		c.Assert(actual, DeepEquals, expected)
-	}
-}
 
-func (_ *ReflextSuite) TestParser_func(c *C) {
-	examples := map[string]expression{
+		// func
 		"func(int) byte": &funcOf{
 			[]expression{&exact{types["int"]}},
 			[]expression{&exact{types["byte"]}},
@@ -64,17 +55,8 @@ func (_ *ReflextSuite) TestParser_func(c *C) {
 			[]expression{&firstOf{[]expression{&exact{types["int"]}, &exact{types["uint"]}}}, &exact{types["bool"]}},
 			[]expression{&exact{types["int"]}, &exact{types["int"]}},
 		},
-	}
-	for s, expected := range examples {
-		c.Log(s)
-		actual, err := parse(s)
-		c.Assert(err, IsNil)
-		c.Assert(actual, DeepEquals, expected)
-	}
-}
 
-func (_ *ReflextSuite) TestParser_concrete(c *C) {
-	examples := map[string]expression{
+		// Concrete
 		"%T":           &exact{types["int"]},
 		"%T | %T | %T": &firstOf{[]expression{&exact{types["int"]}, &exact{types["bool"]}, &exact{types["string"]}}},
 		"map[%T]*%T":   &mapOf{&exact{types["int"]}, &ptrOf{&exact{types["bool"]}}},
