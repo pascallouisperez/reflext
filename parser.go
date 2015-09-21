@@ -71,6 +71,13 @@ var kinds = map[string]reflect.Kind{
 	"struct":     reflect.Struct,
 }
 
+var stop = map[string]bool{
+	"":  true,
+	")": true,
+	",": true,
+	"|": true,
+}
+
 type token struct {
 	text   string
 	offset int
@@ -101,6 +108,11 @@ func parse(expr string, args ...interface{}) (expression, error) {
 
 func (p *parser) parseExpList() ([]expression, bool) {
 	var exps []expression
+	if text, ok := p.peek(); !ok {
+		return nil, false
+	} else if stop[text] {
+		return exps, true
+	}
 	exp, ok := p.parseExp()
 	if !ok {
 		return nil, false
@@ -296,25 +308,24 @@ func (p *parser) parseSubExp() (expression, bool) {
 		if ok := p.consume(")"); !ok {
 			return nil, false
 		}
-		if text, ok := p.peek(); !ok {
-			return nil, false
-		} else if text == "(" {
+		var returnsExp []expression
+		if text, _ := p.peek(); text == "(" {
 			p.next()
-			returnsExp, ok := p.parseExpList()
+			returnsExp, ok = p.parseExpList()
 			if !ok {
 				return nil, false
 			}
 			if ok := p.consume(")"); !ok {
 				return nil, false
 			}
-			return &funcOf{argsExp, returnsExp}, true
-		} else {
+		} else if !stop[text] {
 			returnExp, ok := p.parseExp()
 			if !ok {
 				return nil, false
 			}
-			return &funcOf{argsExp, []expression{returnExp}}, true
+			returnsExp = append(returnsExp, returnExp)
 		}
+		return &funcOf{argsExp, returnsExp}, true
 
 	case "%":
 		argsIndex := p.argsIndex

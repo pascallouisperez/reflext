@@ -43,14 +43,14 @@ func (_ *ReflextSuite) TestParser_good(c *C) {
 		"{{int | {_}}}": &captureOf{&captureOf{&firstOf{[]expression{&exact{types["int"]}, &captureOf{&any{}, 2}}}, 1}, 0},
 
 		// func
-		// "func(int)": &funcOf{
-		// 	[]expression{&exact{types["int"]}},
-		// 	[]expression{},
-		// },
-		// "func() int": &funcOf{
-		// 	[]expression{},
-		// 	[]expression{&exact{types["int"]}},
-		// },
+		"func(int)": &funcOf{
+			[]expression{&exact{types["int"]}},
+			nil,
+		},
+		"func() int": &funcOf{
+			nil,
+			[]expression{&exact{types["int"]}},
+		},
 		"func(int) byte": &funcOf{
 			[]expression{&exact{types["int"]}},
 			[]expression{&exact{types["byte"]}},
