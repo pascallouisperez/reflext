@@ -1,4 +1,4 @@
-## Reflext — Regular Expressions for Types
+## Reflext — Regular Expressions for Types in Go
 
 ### tl;dr
 
@@ -57,15 +57,14 @@ Matching is a good first step, yet in most cases we want to do something with th
 
 which would capture the type of the struct (passed by reference). Or for type aliases of `string` we would write
 
-    {kind[string]}
+    {alias[string]}
 
 ### Limitations
 
 The following are not yet implemented
 
-* `chan` matching
-* Variadic argument types (e.g `int...`)
-* matching variable number of return types
+* Variadic argument types (e.g `int...`), and
+* Matching variable number of return types.
 
 ## Details
 
@@ -102,16 +101,17 @@ All base types `B` e.g. `uint8`, or `float64` are supported. They are simply eli
 The grammar transalates naturally into the following decomposition
 
 * Exact(B)
-* Slice(E)
-* Ptr(E)
-* Map(E, E)
-* Chan(E, opt)
-* Func([]E, []E)
-* Kind(K)
+* ArrayOf(n, E)
+* SliceOf(E)
+* PtrOf(E)
+* MapOf(E, E)
+* ChanOf(E, opt)
+* FuncOf([]E, []E)
+* KindOf(K)
 * Alias(T)
 * Any
 * FirstOf([]E)
-* Capture(E, index)
+* CaptureOf(E, index)
 
 For captures, the index represents the location of the capturing group, starting at `0` and sequentially increasing from left to right. This handles sub-capture groups, such as
 
