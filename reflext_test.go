@@ -25,6 +25,10 @@ func (e *myError) Error() string {
 	return ""
 }
 
+type stringAlias string
+
+type chanIntAlias chan int
+
 func (_ *ReflextSuite) TestMatch(c *C) {
 	examples := map[string]struct {
 		matches, doesnt []interface{}
@@ -69,10 +73,14 @@ func (_ *ReflextSuite) TestMatch(c *C) {
 			matches: []interface{}{struct{}{}, struct{ int }{0}},
 			doesnt:  []interface{}{map[int]bool{}},
 		},
-		// "alias[string]": {
-		// 	matches: []interface{}{},
-		// 	doesnt:  []interface{}{},
-		// },
+		"alias[string]": {
+			matches: []interface{}{stringAlias("")},
+			doesnt:  []interface{}{""},
+		},
+		"alias[chan int]": {
+			matches: []interface{}{make(chanIntAlias)},
+			doesnt:  []interface{}{make(chan int)},
+		},
 		"_": {
 			matches: []interface{}{0, true, "", map[int]int{}},
 			doesnt:  []interface{}{},

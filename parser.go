@@ -265,7 +265,11 @@ func (p *parser) parseSubExp() (expression, bool) {
 		if !p.consume("]") {
 			return nil, false
 		}
-		return &aliasOf{exp}, true
+		if e, ok := exp.(*exact); ok {
+			return &aliasOf{&convertibleTo{e.typ}}, true
+		} else {
+			return &aliasOf{exp}, true
+		}
 
 	case "chan":
 		dir := reflect.BothDir

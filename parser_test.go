@@ -20,20 +20,19 @@ import (
 
 func (_ *ReflextSuite) TestParser_good(c *C) {
 	examples := map[string]expression{
-		"int":               &exact{types["int"]},
-		"[2]bool":           &arrayOf{2, &exact{types["bool"]}},
-		"[]bool":            &sliceOf{&exact{types["bool"]}},
-		"[][]rune":          &sliceOf{&sliceOf{&exact{types["rune"]}}},
-		"*string":           &ptrOf{&exact{types["string"]}},
-		"map[byte]error":    &mapOf{&exact{types["byte"]}, &implements{types["error"]}},
-		"chan int":          &chanOf{&exact{types["int"]}, reflect.BothDir},
-		"chan <- int":       &chanOf{&exact{types["int"]}, reflect.SendDir},
-		"<- chan int":       &chanOf{&exact{types["int"]}, reflect.RecvDir},
-		"kind[uint8]":       &kindOf{kinds["uint8"]},
-		"struct":            &kindOf{kinds["struct"]},
-		"alias[chan uint8]": &aliasOf{&chanOf{&exact{types["uint8"]}, reflect.BothDir}},
-		"_":                 &any{},
-		"int | uint":        &firstOf{[]expression{&exact{types["int"]}, &exact{types["uint"]}}},
+		"int":            &exact{types["int"]},
+		"[2]bool":        &arrayOf{2, &exact{types["bool"]}},
+		"[]bool":         &sliceOf{&exact{types["bool"]}},
+		"[][]rune":       &sliceOf{&sliceOf{&exact{types["rune"]}}},
+		"*string":        &ptrOf{&exact{types["string"]}},
+		"map[byte]error": &mapOf{&exact{types["byte"]}, &implements{types["error"]}},
+		"chan int":       &chanOf{&exact{types["int"]}, reflect.BothDir},
+		"chan <- int":    &chanOf{&exact{types["int"]}, reflect.SendDir},
+		"<- chan int":    &chanOf{&exact{types["int"]}, reflect.RecvDir},
+		"kind[uint8]":    &kindOf{kinds["uint8"]},
+		"struct":         &kindOf{kinds["struct"]},
+		"_":              &any{},
+		"int | uint":     &firstOf{[]expression{&exact{types["int"]}, &exact{types["uint"]}}},
 		"int | kind[int] | uint | kind[uint]": &firstOf{[]expression{
 			&exact{types["int"]}, &kindOf{kinds["int"]},
 			&exact{types["uint"]}, &kindOf{kinds["uint"]},
@@ -41,6 +40,10 @@ func (_ *ReflextSuite) TestParser_good(c *C) {
 		"{int}":         &captureOf{&exact{types["int"]}, 0},
 		"map[{_}]*{_}":  &mapOf{&captureOf{&any{}, 0}, &ptrOf{&captureOf{&any{}, 1}}},
 		"{{int | {_}}}": &captureOf{&captureOf{&firstOf{[]expression{&exact{types["int"]}, &captureOf{&any{}, 2}}}, 1}, 0},
+
+		// alias
+		"alias[string]":     &aliasOf{&convertibleTo{types["string"]}},
+		"alias[chan uint8]": &aliasOf{&chanOf{&exact{types["uint8"]}, reflect.BothDir}},
 
 		// func
 		"func(int)": &funcOf{

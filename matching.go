@@ -209,10 +209,27 @@ type aliasOf struct {
 	exp expression
 }
 
-func (m *aliasOf) Match(reflect.Type) bool { return false }
+func (m *aliasOf) Match(typ reflect.Type) bool {
+	if typ.Name() == "" {
+		return false
+	}
+	return m.exp.Match(typ)
+}
 
 func (m *aliasOf) String() string {
 	return "alias[" + m.exp.String() + "]"
+}
+
+type convertibleTo struct {
+	typ reflect.Type
+}
+
+func (m *convertibleTo) Match(typ reflect.Type) bool {
+	return m.typ != typ && typ.ConvertibleTo(m.typ)
+}
+
+func (m *convertibleTo) String() string {
+	return m.typ.String()
 }
 
 type any struct{}
@@ -270,6 +287,7 @@ var _ = []expression{
 	&funcOf{},
 	&kindOf{},
 	&aliasOf{},
+	&convertibleTo{},
 	&any{},
 	&firstOf{},
 	&captureOf{},
