@@ -1,4 +1,4 @@
-## Reflext — Regular Expressions for Types in Go
+## Reflext — Regular Expressions for Types in Go [![Build Status](https://travis-ci.org/pascallouisperez/reflext.svg?branch=master)](https://travis-ci.org/pascallouisperez/reflext)
 
 ### tl;dr
 
