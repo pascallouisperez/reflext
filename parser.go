@@ -93,7 +93,7 @@ type parser struct {
 	group int
 }
 
-func parse(expr string, args ...interface{}) (expression, error) {
+func parse(expr string, args ...interface{}) (expression, int, error) {
 	p := &parser{
 		tokens: tokenize(expr),
 		index:  0,
@@ -101,9 +101,9 @@ func parse(expr string, args ...interface{}) (expression, error) {
 	}
 	exp, ok := p.parseExp()
 	if !ok || p.index != len(p.tokens) {
-		return nil, fmt.Errorf("unable to parse %s", expr)
+		return nil, 0, fmt.Errorf("unable to parse %s", expr)
 	}
-	return exp, nil
+	return exp, p.group, nil
 }
 
 func (p *parser) parseExpList() ([]expression, bool) {

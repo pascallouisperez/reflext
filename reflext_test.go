@@ -15,6 +15,7 @@ package reflext
 import (
 	"errors"
 	. "gopkg.in/check.v1"
+	"reflect"
 )
 
 type myError struct{}
@@ -116,6 +117,39 @@ func (_ *ReflextSuite) TestMatch(c *C) {
 	}
 }
 
+func (_ *ReflextSuite) TestFindAll(c *C) {
+	examples := map[string][]struct {
+		value    interface{}
+		expected []reflect.Type
+	}{
+		"{_}": {
+			{0, []reflect.Type{types["int"]}},
+			{true, []reflect.Type{types["bool"]}},
+		},
+		"{int} | {bool}": {
+			{0, []reflect.Type{types["int"], nil}},
+			{true, []reflect.Type{nil, types["bool"]}},
+		},
+		"map[{_}]chan {_}": {
+			{make(map[int]chan string), []reflect.Type{types["int"], types["string"]}},
+		},
+		"func({_})": {
+			{func(rune) {}, []reflect.Type{types["rune"]}},
+		},
+		"func() {_}": {
+			{func() int { return 0 }, []reflect.Type{types["int"]}},
+		},
+	}
+	for s, cases := range examples {
+		r := MustCompile(s)
+		for _, eg := range cases {
+			captures, ok := r.FindAll(eg.value)
+			c.Assert(ok, Equals, true)
+			c.Assert(captures, DeepEquals, eg.expected)
+		}
+	}
+}
+
 func (_ *ReflextSuite) TestString(c *C) {
 	r := MustCompile("map[int]bool")
 	c.Assert(r.String(), Equals, "map[int]bool")
@@ -147,7 +181,7 @@ func (_ *ReflextSuite) TestString_expression(c *C) {
 	}
 	for s, expected := range examples {
 		c.Log(s)
-		actual, err := parse(s)
+		actual, _, err := parse(s)
 		c.Assert(err, IsNil)
 		if expected == "" {
 			c.Assert(actual.String(), Equals, s)

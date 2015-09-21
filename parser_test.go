@@ -76,12 +76,12 @@ func (_ *ReflextSuite) TestParser_good(c *C) {
 		c.Log(s)
 
 		// Parse
-		actual, err := parse(s, 0, true, "")
+		actual, _, err := parse(s, 0, true, "")
 		c.Assert(err, IsNil)
 		c.Assert(actual, DeepEquals, expected)
 
 		// Check round trip (expression > string > expression) is identity function
-		actual2, err := parse(expected.String(), 0, true, "")
+		actual2, _, err := parse(expected.String(), 0, true, "")
 		c.Assert(err, IsNil)
 		c.Assert(actual2, DeepEquals, expected)
 	}
@@ -96,7 +96,7 @@ func (_ *ReflextSuite) TestParser_bad(c *C) {
 		"%t",
 	}
 	for _, s := range examples {
-		_, err := parse(s)
+		_, _, err := parse(s)
 		c.Assert(err, NotNil)
 	}
 }

@@ -18,14 +18,15 @@ import (
 
 type Reflext struct {
 	expression
+	numGroup int
 }
 
 func Compile(s string, args ...interface{}) (*Reflext, error) {
-	exp, err := parse(s, args)
+	exp, numGroup, err := parse(s, args)
 	if err != nil {
 		return nil, err
 	}
-	return &Reflext{exp}, nil
+	return &Reflext{exp, numGroup}, nil
 }
 
 func MustCompile(s string, args ...interface{}) *Reflext {
@@ -37,9 +38,13 @@ func MustCompile(s string, args ...interface{}) *Reflext {
 }
 
 func (r *Reflext) Match(value interface{}) bool {
-	return r.expression.Match(reflect.TypeOf(value))
+	return r.expression.Match(reflect.TypeOf(value), nil)
 }
 
 func (r *Reflext) FindAll(value interface{}) ([]reflect.Type, bool) {
-	return nil, false
+	captured := make([]reflect.Type, r.numGroup, r.numGroup)
+	if ok := r.expression.Match(reflect.TypeOf(value), &captured); !ok {
+		return nil, false
+	}
+	return captured, true
 }

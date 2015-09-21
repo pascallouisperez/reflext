@@ -19,7 +19,7 @@ import (
 )
 
 type expression interface {
-	Match(reflect.Type) bool
+	Match(reflect.Type, *[]reflect.Type) bool
 	String() string
 }
 
@@ -27,7 +27,7 @@ type exact struct {
 	typ reflect.Type
 }
 
-func (m *exact) Match(typ reflect.Type) bool {
+func (m *exact) Match(typ reflect.Type, _ *[]reflect.Type) bool {
 	return m.typ == typ
 }
 
@@ -39,7 +39,7 @@ type implements struct {
 	typ reflect.Type
 }
 
-func (m *implements) Match(typ reflect.Type) bool {
+func (m *implements) Match(typ reflect.Type, _ *[]reflect.Type) bool {
 	return typ.Implements(m.typ)
 }
 
@@ -51,11 +51,11 @@ type sliceOf struct {
 	exp expression
 }
 
-func (m *sliceOf) Match(typ reflect.Type) bool {
+func (m *sliceOf) Match(typ reflect.Type, captures *[]reflect.Type) bool {
 	if typ.Kind() != reflect.Slice {
 		return false
 	}
-	return m.exp.Match(typ.Elem())
+	return m.exp.Match(typ.Elem(), captures)
 }
 
 func (m *sliceOf) String() string {
@@ -67,14 +67,14 @@ type arrayOf struct {
 	exp  expression
 }
 
-func (m *arrayOf) Match(typ reflect.Type) bool {
+func (m *arrayOf) Match(typ reflect.Type, captures *[]reflect.Type) bool {
 	if typ.Kind() != reflect.Array {
 		return false
 	}
 	if m.size != typ.Len() {
 		return false
 	}
-	return m.exp.Match(typ.Elem())
+	return m.exp.Match(typ.Elem(), captures)
 }
 
 func (m *arrayOf) String() string {
@@ -85,11 +85,11 @@ type ptrOf struct {
 	exp expression
 }
 
-func (m *ptrOf) Match(typ reflect.Type) bool {
+func (m *ptrOf) Match(typ reflect.Type, captures *[]reflect.Type) bool {
 	if typ.Kind() != reflect.Ptr {
 		return false
 	}
-	return m.exp.Match(typ.Elem())
+	return m.exp.Match(typ.Elem(), captures)
 }
 
 func (m *ptrOf) String() string {
@@ -101,14 +101,14 @@ type mapOf struct {
 	value expression
 }
 
-func (m *mapOf) Match(typ reflect.Type) bool {
+func (m *mapOf) Match(typ reflect.Type, captures *[]reflect.Type) bool {
 	if typ.Kind() != reflect.Map {
 		return false
 	}
-	if !m.key.Match(typ.Key()) {
+	if !m.key.Match(typ.Key(), captures) {
 		return false
 	}
-	if !m.value.Match(typ.Elem()) {
+	if !m.value.Match(typ.Elem(), captures) {
 		return false
 	}
 	return true
@@ -123,14 +123,14 @@ type chanOf struct {
 	dir reflect.ChanDir
 }
 
-func (m *chanOf) Match(typ reflect.Type) bool {
+func (m *chanOf) Match(typ reflect.Type, captures *[]reflect.Type) bool {
 	if typ.Kind() != reflect.Chan {
 		return false
 	}
 	if typ.ChanDir() != m.dir {
 		return false
 	}
-	return m.exp.Match(typ.Elem())
+	return m.exp.Match(typ.Elem(), captures)
 }
 
 func (m *chanOf) String() string {
@@ -150,7 +150,7 @@ type funcOf struct {
 	returns   []expression
 }
 
-func (m *funcOf) Match(typ reflect.Type) bool {
+func (m *funcOf) Match(typ reflect.Type, captures *[]reflect.Type) bool {
 	if typ.Kind() != reflect.Func {
 		return false
 	}
@@ -161,12 +161,12 @@ func (m *funcOf) Match(typ reflect.Type) bool {
 		return false
 	}
 	for i, a := range m.arguments {
-		if !a.Match(typ.In(i)) {
+		if !a.Match(typ.In(i), captures) {
 			return false
 		}
 	}
 	for i, r := range m.returns {
-		if !r.Match(typ.Out(i)) {
+		if !r.Match(typ.Out(i), captures) {
 			return false
 		}
 	}
@@ -197,7 +197,7 @@ type kindOf struct {
 	kind reflect.Kind
 }
 
-func (m *kindOf) Match(typ reflect.Type) bool {
+func (m *kindOf) Match(typ reflect.Type, captures *[]reflect.Type) bool {
 	return m.kind == typ.Kind()
 }
 
@@ -209,11 +209,11 @@ type aliasOf struct {
 	exp expression
 }
 
-func (m *aliasOf) Match(typ reflect.Type) bool {
+func (m *aliasOf) Match(typ reflect.Type, captures *[]reflect.Type) bool {
 	if typ.Name() == "" {
 		return false
 	}
-	return m.exp.Match(typ)
+	return m.exp.Match(typ, captures)
 }
 
 func (m *aliasOf) String() string {
@@ -224,7 +224,7 @@ type convertibleTo struct {
 	typ reflect.Type
 }
 
-func (m *convertibleTo) Match(typ reflect.Type) bool {
+func (m *convertibleTo) Match(typ reflect.Type, captures *[]reflect.Type) bool {
 	return m.typ != typ && typ.ConvertibleTo(m.typ)
 }
 
@@ -234,7 +234,7 @@ func (m *convertibleTo) String() string {
 
 type any struct{}
 
-func (m *any) Match(reflect.Type) bool {
+func (m *any) Match(_ reflect.Type, _ *[]reflect.Type) bool {
 	return true
 }
 
@@ -246,9 +246,9 @@ type firstOf struct {
 	exps []expression
 }
 
-func (m *firstOf) Match(typ reflect.Type) bool {
+func (m *firstOf) Match(typ reflect.Type, captures *[]reflect.Type) bool {
 	for _, exp := range m.exps {
-		if exp.Match(typ) {
+		if exp.Match(typ, captures) {
 			return true
 		}
 	}
@@ -268,8 +268,14 @@ type captureOf struct {
 	index int
 }
 
-func (m *captureOf) Match(typ reflect.Type) bool {
-	return m.exp.Match(typ)
+func (m *captureOf) Match(typ reflect.Type, captures *[]reflect.Type) bool {
+	if ok := m.exp.Match(typ, captures); !ok {
+		return false
+	}
+	if captures != nil {
+		(*captures)[m.index] = typ
+	}
+	return true
 }
 
 func (m *captureOf) String() string {
