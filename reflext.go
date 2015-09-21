@@ -37,7 +37,7 @@ func MustCompile(s string, args ...interface{}) *Reflext {
 }
 
 func (r *Reflext) Match(value interface{}) bool {
-	return false
+	return r.expression.Match(reflect.TypeOf(value))
 }
 
 func (r *Reflext) FindAll(value interface{}) ([]reflect.Type, bool) {

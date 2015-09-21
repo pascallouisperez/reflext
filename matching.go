@@ -27,7 +27,9 @@ type exact struct {
 	typ reflect.Type
 }
 
-func (m *exact) Match(reflect.Type) bool { return false }
+func (m *exact) Match(typ reflect.Type) bool {
+	return m.typ == typ
+}
 
 func (m *exact) String() string {
 	return m.typ.String()
@@ -37,7 +39,12 @@ type sliceOf struct {
 	exp expression
 }
 
-func (m *sliceOf) Match(reflect.Type) bool { return false }
+func (m *sliceOf) Match(typ reflect.Type) bool {
+	if typ.Kind() != reflect.Slice {
+		return false
+	}
+	return m.exp.Match(typ.Elem())
+}
 
 func (m *sliceOf) String() string {
 	return "[]" + m.exp.String()
@@ -48,7 +55,15 @@ type arrayOf struct {
 	exp  expression
 }
 
-func (m *arrayOf) Match(reflect.Type) bool { return false }
+func (m *arrayOf) Match(typ reflect.Type) bool {
+	if typ.Kind() != reflect.Array {
+		return false
+	}
+	if m.size != typ.Len() {
+		return false
+	}
+	return m.exp.Match(typ.Elem())
+}
 
 func (m *arrayOf) String() string {
 	return "[" + strconv.Itoa(m.size) + "]" + m.exp.String()
@@ -58,7 +73,12 @@ type ptrOf struct {
 	exp expression
 }
 
-func (m *ptrOf) Match(reflect.Type) bool { return false }
+func (m *ptrOf) Match(typ reflect.Type) bool {
+	if typ.Kind() != reflect.Ptr {
+		return false
+	}
+	return m.exp.Match(typ.Elem())
+}
 
 func (m *ptrOf) String() string {
 	return "*" + m.exp.String()
@@ -69,7 +89,18 @@ type mapOf struct {
 	value expression
 }
 
-func (m *mapOf) Match(reflect.Type) bool { return false }
+func (m *mapOf) Match(typ reflect.Type) bool {
+	if typ.Kind() != reflect.Map {
+		return false
+	}
+	if !m.key.Match(typ.Key()) {
+		return false
+	}
+	if !m.value.Match(typ.Elem()) {
+		return false
+	}
+	return true
+}
 
 func (m *mapOf) String() string {
 	return "map[" + m.key.String() + "]" + m.value.String()
@@ -80,16 +111,24 @@ type chanOf struct {
 	dir reflect.ChanDir
 }
 
-func (m *chanOf) Match(reflect.Type) bool { return false }
+func (m *chanOf) Match(typ reflect.Type) bool {
+	if typ.Kind() != reflect.Chan {
+		return false
+	}
+	if typ.ChanDir() != m.dir {
+		return false
+	}
+	return m.exp.Match(typ.Elem())
+}
 
 func (m *chanOf) String() string {
 	switch m.dir {
 	case reflect.BothDir:
 		return "chan " + m.exp.String()
 	case reflect.SendDir:
-		return "chan <- " + m.exp.String()
+		return "chan<- " + m.exp.String()
 	case reflect.RecvDir:
-		return "<- chan " + m.exp.String()
+		return "<-chan " + m.exp.String()
 	}
 	panic("unreachable")
 }
@@ -99,7 +138,28 @@ type funcOf struct {
 	returns   []expression
 }
 
-func (m *funcOf) Match(reflect.Type) bool { return false }
+func (m *funcOf) Match(typ reflect.Type) bool {
+	if typ.Kind() != reflect.Func {
+		return false
+	}
+	if len(m.arguments) != typ.NumIn() {
+		return false
+	}
+	if len(m.returns) != typ.NumOut() {
+		return false
+	}
+	for i, a := range m.arguments {
+		if !a.Match(typ.In(i)) {
+			return false
+		}
+	}
+	for i, r := range m.returns {
+		if !r.Match(typ.Out(i)) {
+			return false
+		}
+	}
+	return true
+}
 
 func (m *funcOf) String() string {
 	var (
@@ -125,7 +185,9 @@ type kindOf struct {
 	kind reflect.Kind
 }
 
-func (m *kindOf) Match(reflect.Type) bool { return false }
+func (m *kindOf) Match(typ reflect.Type) bool {
+	return m.kind == typ.Kind()
+}
 
 func (m *kindOf) String() string {
 	return "kind[" + m.kind.String() + "]"
@@ -143,7 +205,9 @@ func (m *aliasOf) String() string {
 
 type any struct{}
 
-func (m *any) Match(reflect.Type) bool { return false }
+func (m *any) Match(reflect.Type) bool {
+	return true
+}
 
 func (m *any) String() string {
 	return "_"
@@ -153,7 +217,14 @@ type firstOf struct {
 	exps []expression
 }
 
-func (m *firstOf) Match(reflect.Type) bool { return false }
+func (m *firstOf) Match(typ reflect.Type) bool {
+	for _, exp := range m.exps {
+		if exp.Match(typ) {
+			return true
+		}
+	}
+	return false
+}
 
 func (m *firstOf) String() string {
 	var e []string
@@ -168,7 +239,9 @@ type captureOf struct {
 	index int
 }
 
-func (m *captureOf) Match(reflect.Type) bool { return false }
+func (m *captureOf) Match(typ reflect.Type) bool {
+	return m.exp.Match(typ)
+}
 
 func (m *captureOf) String() string {
 	return "{" + m.exp.String() + "}"
