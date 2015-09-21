@@ -336,11 +336,11 @@ func (p *parser) parseSubExp() (expression, bool) {
 		if len(p.args) <= argsIndex {
 			return nil, false
 		}
-		return &exact{reflect.TypeOf(p.args[argsIndex])}, true
+		return exactOrImplements(reflect.TypeOf(p.args[argsIndex])), true
 
 	default:
 		if typ, ok := types[text]; ok {
-			return &exact{typ}, true
+			return exactOrImplements(typ), true
 		}
 		return nil, false
 
@@ -391,4 +391,12 @@ func tokenize(expr string) []token {
 		}
 	}
 	panic("unreachable")
+}
+
+func exactOrImplements(typ reflect.Type) expression {
+	if typ.Kind() == reflect.Interface {
+		return &implements{typ}
+	} else {
+		return &exact{typ}
+	}
 }

@@ -35,6 +35,18 @@ func (m *exact) String() string {
 	return m.typ.String()
 }
 
+type implements struct {
+	typ reflect.Type
+}
+
+func (m *implements) Match(typ reflect.Type) bool {
+	return typ.Implements(m.typ)
+}
+
+func (m *implements) String() string {
+	return m.typ.String()
+}
+
 type sliceOf struct {
 	exp expression
 }
@@ -250,6 +262,7 @@ func (m *captureOf) String() string {
 // Assert that all matches implement the expression interface.
 var _ = []expression{
 	&exact{},
+	&implements{},
 	&sliceOf{},
 	&arrayOf{},
 	&ptrOf{},

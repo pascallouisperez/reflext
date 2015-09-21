@@ -13,8 +13,17 @@
 package reflext
 
 import (
+	"errors"
 	. "gopkg.in/check.v1"
 )
+
+type myError struct{}
+
+var _ error = &myError{}
+
+func (e *myError) Error() string {
+	return ""
+}
 
 func (_ *ReflextSuite) TestMatch(c *C) {
 	examples := map[string]struct {
@@ -22,6 +31,10 @@ func (_ *ReflextSuite) TestMatch(c *C) {
 	}{
 		"int": {
 			matches: []interface{}{int(0)},
+			doesnt:  []interface{}{int8(0)},
+		},
+		"error": {
+			matches: []interface{}{errors.New(""), &myError{}},
 			doesnt:  []interface{}{int8(0)},
 		},
 		"[2]int": {

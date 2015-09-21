@@ -25,7 +25,7 @@ func (_ *ReflextSuite) TestParser_good(c *C) {
 		"[]bool":            &sliceOf{&exact{types["bool"]}},
 		"[][]rune":          &sliceOf{&sliceOf{&exact{types["rune"]}}},
 		"*string":           &ptrOf{&exact{types["string"]}},
-		"map[byte]error":    &mapOf{&exact{types["byte"]}, &exact{types["error"]}},
+		"map[byte]error":    &mapOf{&exact{types["byte"]}, &implements{types["error"]}},
 		"chan int":          &chanOf{&exact{types["int"]}, reflect.BothDir},
 		"chan <- int":       &chanOf{&exact{types["int"]}, reflect.SendDir},
 		"<- chan int":       &chanOf{&exact{types["int"]}, reflect.RecvDir},
