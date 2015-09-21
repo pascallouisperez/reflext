@@ -63,9 +63,16 @@ func (_ *ReflextSuite) TestParser_good(c *C) {
 	}
 	for s, expected := range examples {
 		c.Log(s)
+
+		// Parse
 		actual, err := parse(s, 0, true, "")
 		c.Assert(err, IsNil)
 		c.Assert(actual, DeepEquals, expected)
+
+		// Check round trip (expression > string > expression) is identity function
+		actual2, err := parse(expected.String(), 0, true, "")
+		c.Assert(err, IsNil)
+		c.Assert(actual2, DeepEquals, expected)
 	}
 }
 

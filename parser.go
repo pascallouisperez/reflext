@@ -13,7 +13,6 @@
 package reflext
 
 import (
-	"errors"
 	"fmt"
 	"reflect"
 	"strconv"
@@ -26,7 +25,7 @@ var types = map[string]reflect.Type{
 	"byte":       reflect.TypeOf(byte(0)),
 	"complex64":  reflect.TypeOf(complex64(0)),
 	"complex128": reflect.TypeOf(complex128(0)),
-	"error":      reflect.TypeOf(errors.New("")),
+	"error":      reflect.TypeOf(new(error)).Elem(),
 	"float32":    reflect.TypeOf(float32(0)),
 	"float64":    reflect.TypeOf(float64(0)),
 	"int":        reflect.TypeOf(int(0)),
@@ -95,7 +94,7 @@ func parse(expr string, args ...interface{}) (expression, error) {
 	}
 	exp, ok := p.parseExp()
 	if !ok || p.index != len(p.tokens) {
-		return nil, fmt.Errorf("unable to parse %s %#v", expr, p.tokens)
+		return nil, fmt.Errorf("unable to parse %s", expr)
 	}
 	return exp, nil
 }

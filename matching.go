@@ -14,23 +14,34 @@ package reflext
 
 import (
 	"reflect"
+	"strconv"
+	"strings"
 )
 
 type expression interface {
 	Match(reflect.Type) bool
+	String() string
 }
 
 type exact struct {
-	exp reflect.Type
+	typ reflect.Type
 }
 
 func (m *exact) Match(reflect.Type) bool { return false }
+
+func (m *exact) String() string {
+	return m.typ.String()
+}
 
 type sliceOf struct {
 	exp expression
 }
 
 func (m *sliceOf) Match(reflect.Type) bool { return false }
+
+func (m *sliceOf) String() string {
+	return "[]" + m.exp.String()
+}
 
 type arrayOf struct {
 	size int
@@ -39,11 +50,19 @@ type arrayOf struct {
 
 func (m *arrayOf) Match(reflect.Type) bool { return false }
 
+func (m *arrayOf) String() string {
+	return "[" + strconv.Itoa(m.size) + "]" + m.exp.String()
+}
+
 type ptrOf struct {
 	exp expression
 }
 
 func (m *ptrOf) Match(reflect.Type) bool { return false }
+
+func (m *ptrOf) String() string {
+	return "*" + m.exp.String()
+}
 
 type mapOf struct {
 	key   expression
@@ -52,12 +71,28 @@ type mapOf struct {
 
 func (m *mapOf) Match(reflect.Type) bool { return false }
 
+func (m *mapOf) String() string {
+	return "map[" + m.key.String() + "]" + m.value.String()
+}
+
 type chanOf struct {
 	exp expression
 	dir reflect.ChanDir
 }
 
 func (m *chanOf) Match(reflect.Type) bool { return false }
+
+func (m *chanOf) String() string {
+	switch m.dir {
+	case reflect.BothDir:
+		return "chan " + m.exp.String()
+	case reflect.SendDir:
+		return "chan <- " + m.exp.String()
+	case reflect.RecvDir:
+		return "<- chan " + m.exp.String()
+	}
+	panic("unreachable")
+}
 
 type funcOf struct {
 	arguments []expression
@@ -66,11 +101,35 @@ type funcOf struct {
 
 func (m *funcOf) Match(reflect.Type) bool { return false }
 
+func (m *funcOf) String() string {
+	var (
+		args []string
+		rets []string
+		ret  string
+	)
+	for _, a := range m.arguments {
+		args = append(args, a.String())
+	}
+	if len(m.returns) == 1 {
+		ret = m.returns[0].String()
+	} else {
+		for _, r := range m.returns {
+			rets = append(rets, r.String())
+		}
+		ret = "(" + strings.Join(rets, ", ") + ")"
+	}
+	return "func(" + strings.Join(args, ", ") + ") " + ret
+}
+
 type kindOf struct {
 	kind reflect.Kind
 }
 
 func (m *kindOf) Match(reflect.Type) bool { return false }
+
+func (m *kindOf) String() string {
+	return "kind[" + m.kind.String() + "]"
+}
 
 type aliasOf struct {
 	exp expression
@@ -78,9 +137,17 @@ type aliasOf struct {
 
 func (m *aliasOf) Match(reflect.Type) bool { return false }
 
+func (m *aliasOf) String() string {
+	return "alias[" + m.exp.String() + "]"
+}
+
 type any struct{}
 
 func (m *any) Match(reflect.Type) bool { return false }
+
+func (m *any) String() string {
+	return "_"
+}
 
 type firstOf struct {
 	exps []expression
@@ -88,12 +155,24 @@ type firstOf struct {
 
 func (m *firstOf) Match(reflect.Type) bool { return false }
 
+func (m *firstOf) String() string {
+	var e []string
+	for _, exp := range m.exps {
+		e = append(e, exp.String())
+	}
+	return strings.Join(e, " | ")
+}
+
 type captureOf struct {
 	exp   expression
 	index int
 }
 
 func (m *captureOf) Match(reflect.Type) bool { return false }
+
+func (m *captureOf) String() string {
+	return "{" + m.exp.String() + "}"
+}
 
 // Assert that all matches implement the expression interface.
 var _ = []expression{
