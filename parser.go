@@ -196,7 +196,7 @@ func (p *parser) parseSubExp() (expression, bool) {
 		return nil, false
 
 	case "*":
-		exp, ok := p.parseExp()
+		exp, ok := p.parseSubExp()
 		if !ok {
 			return nil, false
 		}
@@ -228,7 +228,7 @@ func (p *parser) parseSubExp() (expression, bool) {
 		if ok := p.consume("]"); !ok {
 			return nil, false
 		}
-		exp2, ok := p.parseExp()
+		exp2, ok := p.parseSubExp()
 		if !ok {
 			return nil, false
 		}
@@ -282,7 +282,7 @@ func (p *parser) parseSubExp() (expression, bool) {
 			}
 			dir = reflect.SendDir
 		}
-		exp, ok := p.parseExp()
+		exp, ok := p.parseSubExp()
 		if !ok {
 			return nil, false
 		}
@@ -295,7 +295,7 @@ func (p *parser) parseSubExp() (expression, bool) {
 		if ok := p.consume("chan"); !ok {
 			return nil, false
 		}
-		exp, ok := p.parseExp()
+		exp, ok := p.parseSubExp()
 		if !ok {
 			return nil, false
 		}
@@ -323,7 +323,7 @@ func (p *parser) parseSubExp() (expression, bool) {
 				return nil, false
 			}
 		} else if !stop[text] {
-			returnExp, ok := p.parseExp()
+			returnExp, ok := p.parseSubExp()
 			if !ok {
 				return nil, false
 			}

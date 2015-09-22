@@ -59,6 +59,16 @@ which would capture the type of the struct (passed by reference). Or for type al
 
     {alias[string]}
 
+### Handling Ambiguity
+
+Because the conjunctive form `|` has the highest precedence, you may run into cases where you need to disambiguate. Let's say you want to match a `map` of `string` to either `int` or `uint`, you may try
+
+    map[string]int | uint
+
+Unfortunately, that will match a `map[string]int` or a `uint`! To disambiguate, use the capturing construct
+
+    map[string]{int | uint}
+
 ### Limitations
 
 The following are not yet implemented

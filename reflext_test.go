@@ -133,6 +133,14 @@ func (_ *ReflextSuite) TestFindAll(c *C) {
 		"map[{_}]chan {_}": {
 			{make(map[int]chan string), []reflect.Type{types["int"], types["string"]}},
 		},
+		"map[string]int | uint": {
+			{make(map[string]int), []reflect.Type{}},
+			{uint(0), []reflect.Type{}},
+		},
+		"map[string]{int | uint}": {
+			{make(map[string]int), []reflect.Type{types["int"]}},
+			{make(map[string]uint), []reflect.Type{types["uint"]}},
+		},
 		"func({_})": {
 			{func(rune) {}, []reflect.Type{types["rune"]}},
 		},
@@ -143,6 +151,7 @@ func (_ *ReflextSuite) TestFindAll(c *C) {
 	for s, cases := range examples {
 		r := MustCompile(s)
 		for _, eg := range cases {
+			c.Logf("%s with %T", s, eg.value)
 			captures, ok := r.FindAll(eg.value)
 			c.Assert(ok, Equals, true)
 			c.Assert(captures, DeepEquals, eg.expected)
