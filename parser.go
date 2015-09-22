@@ -340,7 +340,12 @@ func (p *parser) parseSubExp() (expression, bool) {
 		if len(p.args) <= argsIndex {
 			return nil, false
 		}
-		return exactOrImplements(reflect.TypeOf(p.args[argsIndex])), true
+		arg := p.args[argsIndex]
+		if typ, ok := arg.(reflect.Type); ok {
+			return exactOrImplements(typ), true
+		} else {
+			return exactOrImplements(reflect.TypeOf(arg)), true
+		}
 
 	default:
 		if typ, ok := types[text]; ok {

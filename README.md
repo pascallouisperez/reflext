@@ -59,6 +59,18 @@ which would capture the type of the struct (passed by reference). Or for type al
 
     {alias[string]}
 
+### Interfaces
+
+Matching against interfaces is a little more tricky, because it's not possible to create a value whose type if the interface (values will _implement_ the interface only). For this use case, you can pass `reflect.Type` directly as part of variadic `args` to `Compile` or `MustCompile`.
+
+Concretelly, let's say you have
+
+    type MyAwesomeInterface interface ...
+
+To match against it you would write
+
+    r := MustCompile("%T", reflect.TypeOf((*MyAwesomeInterface)(nil)).Elem())
+
 ### Handling Ambiguity
 
 Because the conjunctive form `|` has the highest precedence, you may run into cases where you need to disambiguate. Let's say you want to match a `map` of `string` to either `int` or `uint`, you may try

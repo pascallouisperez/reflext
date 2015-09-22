@@ -18,6 +18,8 @@ import (
 	. "gopkg.in/check.v1"
 )
 
+type someInterface interface{}
+
 func (_ *ReflextSuite) TestParser_good(c *C) {
 	examples := map[string]expression{
 		"int":            &exact{types["int"]},
@@ -89,6 +91,13 @@ func (_ *ReflextSuite) TestParser_good(c *C) {
 		c.Assert(err, IsNil)
 		c.Assert(actual2, DeepEquals, expected)
 	}
+}
+
+func (_ *ReflextSuite) TestParser_concreteWithInterface(c *C) {
+	actual, _, err := parse("%T", reflect.TypeOf((*someInterface)(nil)).Elem())
+	c.Assert(err, IsNil)
+	c.Assert(actual, DeepEquals, &implements{reflect.TypeOf((*someInterface)(nil)).Elem()})
+	c.Assert(actual.String(), Equals, "reflext.someInterface")
 }
 
 func (_ *ReflextSuite) TestParser_bad(c *C) {
