@@ -22,7 +22,7 @@ type Reflext struct {
 }
 
 func Compile(s string, args ...interface{}) (*Reflext, error) {
-	exp, numGroup, err := parse(s, args)
+	exp, numGroup, err := parse(s, args...)
 	if err != nil {
 		return nil, err
 	}

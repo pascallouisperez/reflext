@@ -147,9 +147,12 @@ func (_ *ReflextSuite) TestFindAll(c *C) {
 		"func() {_}": {
 			{func() int { return 0 }, []reflect.Type{types["int"]}},
 		},
+		"{%T}": {
+			{&myError{}, []reflect.Type{reflect.TypeOf(&myError{})}},
+		},
 	}
 	for s, cases := range examples {
-		r := MustCompile(s)
+		r := MustCompile(s, reflect.TypeOf((*error)(nil)).Elem())
 		for _, eg := range cases {
 			c.Logf("%s with %T", s, eg.value)
 			captures, ok := r.FindAll(eg.value)
