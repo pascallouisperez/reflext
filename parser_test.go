@@ -18,8 +18,6 @@ import (
 	. "gopkg.in/check.v1"
 )
 
-type someInterface interface{}
-
 func (_ *ReflextSuite) TestParser_good(c *C) {
 	examples := map[string]expression{
 		"int":            &exact{types["int"]},

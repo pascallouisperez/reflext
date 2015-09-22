@@ -23,3 +23,17 @@ func Test(t *testing.T) { TestingT(t) }
 type ReflextSuite struct{}
 
 var _ = Suite(&ReflextSuite{})
+
+type myError struct{}
+
+var _ error = &myError{}
+
+func (e *myError) Error() string {
+	return ""
+}
+
+type stringAlias string
+
+type chanIntAlias chan int
+
+type someInterface interface{}

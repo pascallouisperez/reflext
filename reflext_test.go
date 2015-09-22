@@ -18,18 +18,6 @@ import (
 	"reflect"
 )
 
-type myError struct{}
-
-var _ error = &myError{}
-
-func (e *myError) Error() string {
-	return ""
-}
-
-type stringAlias string
-
-type chanIntAlias chan int
-
 func (_ *ReflextSuite) TestMatch(c *C) {
 	examples := map[string]struct {
 		matches, doesnt []interface{}
