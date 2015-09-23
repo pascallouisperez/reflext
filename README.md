@@ -61,7 +61,7 @@ which would capture the type of the struct (passed by reference). Or for type al
 
 ### Interfaces
 
-Matching against interfaces is a little more tricky, because it's not possible to create a value whose type if the interface (values will _implement_ the interface only). For this use case, you can pass `reflect.Type` directly as part of variadic `args` to `Compile` or `MustCompile`.
+Matching against interfaces is a little more tricky, because it's harder to create a value whose type if the interface (values will usually _implement_ the interface only). For this use case, you can pass `reflect.Type` directly as part of variadic `args` to `Compile` or `MustCompile`.
 
 Concretelly, let's say you have
 
