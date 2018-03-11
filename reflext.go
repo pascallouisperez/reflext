@@ -41,6 +41,10 @@ func (r *Reflext) Match(value interface{}) bool {
 	return r.expression.Match(reflect.TypeOf(value), nil)
 }
 
+func (r *Reflext) MatchType(t reflect.Type) bool {
+	return r.expression.Match(t, nil)
+}
+
 func (r *Reflext) FindAll(value interface{}) ([]reflect.Type, bool) {
 	captured := make([]reflect.Type, r.numGroup, r.numGroup)
 	if ok := r.expression.Match(reflect.TypeOf(value), &captured); !ok {
