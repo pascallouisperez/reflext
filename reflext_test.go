@@ -14,9 +14,8 @@ package reflext
 
 import (
 	"errors"
-	"reflect"
-
 	. "gopkg.in/check.v1"
+	"reflect"
 )
 
 func (_ *ReflextSuite) TestMatch(c *C) {
