@@ -120,7 +120,7 @@ All base types `B` e.g. `uint8`, or `float64` are supported. They are simply eli
 
 ### AST
 
-The grammar transalates naturally into the following decomposition
+The grammar translates naturally into the following decomposition
 
 * Exact(B)
 * ArrayOf(n, E)
