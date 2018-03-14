@@ -38,16 +38,20 @@ func MustCompile(s string, args ...interface{}) *Reflext {
 }
 
 func (r *Reflext) Match(value interface{}) bool {
-	return r.expression.Match(reflect.TypeOf(value), nil)
+	return r.MatchInType(reflect.TypeOf(value))
 }
 
-func (r *Reflext) MatchType(t reflect.Type) bool {
+func (r *Reflext) MatchInType(t reflect.Type) bool {
 	return r.expression.Match(t, nil)
 }
 
 func (r *Reflext) FindAll(value interface{}) ([]reflect.Type, bool) {
+	return r.FindAllInType(reflect.TypeOf(value))
+}
+
+func (r *Reflext) FindAllInType(t reflect.Type) ([]reflect.Type, bool) {
 	captured := make([]reflect.Type, r.numGroup, r.numGroup)
-	if ok := r.expression.Match(reflect.TypeOf(value), &captured); !ok {
+	if ok := r.expression.Match(t, &captured); !ok {
 		return nil, false
 	}
 	return captured, true

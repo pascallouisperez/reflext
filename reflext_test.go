@@ -18,94 +18,7 @@ import (
 	"reflect"
 )
 
-func (_ *ReflextSuite) TestMatch(c *C) {
-	examples := map[string]struct {
-		matches, doesnt []interface{}
-	}{
-		"int": {
-			matches: []interface{}{int(0)},
-			doesnt:  []interface{}{int8(0)},
-		},
-		"error": {
-			matches: []interface{}{errors.New(""), &myError{}},
-			doesnt:  []interface{}{int8(0)},
-		},
-		"[2]int": {
-			matches: []interface{}{[2]int{}},
-			doesnt:  []interface{}{[3]int{}, [2]bool{}},
-		},
-		"[]int": {
-			matches: []interface{}{[]int{}},
-			doesnt:  []interface{}{[]bool{}, [2]int{}},
-		},
-		"*int": {
-			matches: []interface{}{new(int)},
-			doesnt:  []interface{}{new(bool)},
-		},
-		"map[string]bool": {
-			matches: []interface{}{map[string]bool{}},
-			doesnt:  []interface{}{map[string]string{}, map[bool]bool{}, new(bool)},
-		},
-		"chan int": {
-			matches: []interface{}{make(chan int)},
-			doesnt:  []interface{}{make(chan bool), make(chan<- int), make(<-chan int), new(int)},
-		},
-		"chan<- int": {
-			matches: []interface{}{make(chan<- int)},
-			doesnt:  []interface{}{make(chan bool), make(chan int), make(<-chan int), new(int)},
-		},
-		"<-chan int": {
-			matches: []interface{}{make(<-chan int)},
-			doesnt:  []interface{}{make(chan bool), make(chan<- int), make(chan int), new(int)},
-		},
-		"kind[struct]": {
-			matches: []interface{}{struct{}{}, struct{ int }{0}},
-			doesnt:  []interface{}{map[int]bool{}},
-		},
-		"alias[string]": {
-			matches: []interface{}{stringAlias("")},
-			doesnt:  []interface{}{""},
-		},
-		"alias[chan int]": {
-			matches: []interface{}{make(chanIntAlias)},
-			doesnt:  []interface{}{make(chan int)},
-		},
-		"_": {
-			matches: []interface{}{0, true, "", map[int]int{}},
-			doesnt:  []interface{}{},
-		},
-		"{int}": {
-			matches: []interface{}{0},
-			doesnt:  []interface{}{false},
-		},
-		"int | bool": {
-			matches: []interface{}{0, true},
-			doesnt:  []interface{}{6.7, ""},
-		},
-		"func(int) int": {
-			matches: []interface{}{func(int) int { return 0 }},
-			doesnt: []interface{}{
-				func(int) (int, int) { return 0, 0 },
-				func(int) bool { return true },
-				func() int { return 0 },
-				func(bool) int { return 0 },
-			},
-		},
-	}
-	for s, cases := range examples {
-		r := MustCompile(s)
-		for _, value := range cases.matches {
-			c.Logf("%s matches %T", s, value)
-			c.Assert(r.Match(value), Equals, true)
-		}
-		for _, value := range cases.doesnt {
-			c.Logf("%s does not match %T", s, value)
-			c.Assert(r.Match(value), Equals, false)
-		}
-	}
-}
-
-func (_ *ReflextSuite) TestMatchType(c *C) {
+func (_ *ReflextSuite) TestMatchInType(c *C) {
 	examples := map[string]struct {
 		matches, doesnt []interface{}
 	}{
@@ -184,17 +97,17 @@ func (_ *ReflextSuite) TestMatchType(c *C) {
 		for _, value := range cases.matches {
 			t := reflect.TypeOf(value)
 			c.Logf("%s matches %s", s, t)
-			c.Assert(r.MatchType(t), Equals, true)
+			c.Assert(r.MatchInType(t), Equals, true)
 		}
 		for _, value := range cases.doesnt {
 			t := reflect.TypeOf(value)
 			c.Logf("%s does not match %s", s, t)
-			c.Assert(r.MatchType(t), Equals, false)
+			c.Assert(r.MatchInType(t), Equals, false)
 		}
 	}
 }
 
-func (_ *ReflextSuite) TestFindAll(c *C) {
+func (_ *ReflextSuite) TestFindAllInType(c *C) {
 	examples := map[string][]struct {
 		value    interface{}
 		expected []reflect.Type
@@ -231,8 +144,9 @@ func (_ *ReflextSuite) TestFindAll(c *C) {
 	for s, cases := range examples {
 		r := MustCompile(s, reflect.TypeOf((*error)(nil)).Elem())
 		for _, eg := range cases {
-			c.Logf("%s with %T", s, eg.value)
-			captures, ok := r.FindAll(eg.value)
+			t := reflect.TypeOf(eg.value)
+			c.Logf("%s with %s", s, t)
+			captures, ok := r.FindAllInType(t)
 			c.Assert(ok, Equals, true)
 			c.Assert(captures, DeepEquals, eg.expected)
 		}
