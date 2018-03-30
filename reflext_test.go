@@ -18,7 +18,7 @@ import (
 	"reflect"
 )
 
-func (_ *ReflextSuite) TestMatch(c *C) {
+func (_ *ReflextSuite) TestMatchInType(c *C) {
 	examples := map[string]struct {
 		matches, doesnt []interface{}
 	}{
@@ -95,17 +95,19 @@ func (_ *ReflextSuite) TestMatch(c *C) {
 	for s, cases := range examples {
 		r := MustCompile(s)
 		for _, value := range cases.matches {
-			c.Logf("%s matches %T", s, value)
-			c.Assert(r.Match(value), Equals, true)
+			t := reflect.TypeOf(value)
+			c.Logf("%s matches %s", s, t)
+			c.Assert(r.MatchInType(t), Equals, true)
 		}
 		for _, value := range cases.doesnt {
-			c.Logf("%s does not match %T", s, value)
-			c.Assert(r.Match(value), Equals, false)
+			t := reflect.TypeOf(value)
+			c.Logf("%s does not match %s", s, t)
+			c.Assert(r.MatchInType(t), Equals, false)
 		}
 	}
 }
 
-func (_ *ReflextSuite) TestFindAll(c *C) {
+func (_ *ReflextSuite) TestFindAllInType(c *C) {
 	examples := map[string][]struct {
 		value    interface{}
 		expected []reflect.Type
@@ -142,8 +144,9 @@ func (_ *ReflextSuite) TestFindAll(c *C) {
 	for s, cases := range examples {
 		r := MustCompile(s, reflect.TypeOf((*error)(nil)).Elem())
 		for _, eg := range cases {
-			c.Logf("%s with %T", s, eg.value)
-			captures, ok := r.FindAll(eg.value)
+			t := reflect.TypeOf(eg.value)
+			c.Logf("%s with %s", s, t)
+			captures, ok := r.FindAllInType(t)
 			c.Assert(ok, Equals, true)
 			c.Assert(captures, DeepEquals, eg.expected)
 		}
